@@ -4,10 +4,10 @@ export const getMuiTheme = (mode) => createTheme({
   palette: {
     mode,
     primary: {
-      main: '#2563EB',
+      main: mode === 'dark' ? '#3B82F6' : '#2563EB',
     },
     secondary: {
-      main: '#94A3B8',
+      main: mode === 'dark' ? '#94A3B8' : '#64748B',
     },
     error: {
       main: '#EF4444',
@@ -19,7 +19,7 @@ export const getMuiTheme = (mode) => createTheme({
       main: '#10B981',
     },
     info: {
-      main: '#3B82F6',
+      main: mode === 'dark' ? '#3B82F6' : '#2563EB',
     },
     background: {
       default: mode === 'dark' ? '#0F172A' : '#F8FAFC',
@@ -47,8 +47,10 @@ export const getMuiTheme = (mode) => createTheme({
         root: {
           borderRadius: 8,
           boxShadow: 'none',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
             boxShadow: 'none',
+            transform: 'translateY(-1px)',
           },
         },
       },

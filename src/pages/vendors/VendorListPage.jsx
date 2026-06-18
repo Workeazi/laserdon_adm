@@ -10,20 +10,8 @@ import FilterDropdown from '../../components/common/FilterDropdown';
 import { vendorService } from '../../services/vendorService';
 import { authService } from '../../services/authService';
 
-const columns = [
- { field: 'company_name', headerName: 'Company Name', renderCell: (r) => r.companies?.short_name || 'N/A' },
- { field: 'username', headerName: 'User Name' },
- { field: 'email', headerName: 'Email' },
- { field: 'gst_number', headerName: 'GST Number', renderCell: (r) => r.companies?.company_gst_number || 'N/A' },
- { field: 'phone', headerName: 'Phone' },
- { field: 'whatsapp_number', headerName: 'WhatsApp' },
- { field: 'alt_phone', headerName: 'Alt Phone' },
- { field: 'industry_type', headerName: 'Industry Type', renderCell: (r) => r.industries?.map(i => i.name).join(', ') || 'N/A' },
- { field: 'office_address', headerName: 'Office Address', renderCell: (r) => r.companies?.company_address || 'N/A' },
- { field: 'status', headerName: 'Status', renderCell: (r) => <StatusBadge status={r.status} module="vendor" /> },
- { field: 'total_revenue', headerName: 'Total Revenue', renderCell: (r) => `₹${(r.total_revenue || 0).toLocaleString()}` },
- { field: 'created_at', headerName: 'Created Date', renderCell: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
-];
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 const VendorListPage = () => {
  const navigate = useNavigate();
@@ -32,10 +20,57 @@ const VendorListPage = () => {
  const [filter, setFilter] = useState('all');
  const [vendors, setVendors] = useState([]);
  const [loading, setLoading] = useState(true);
- 
- const currentAdmin = authService.getCurrentAdmin();
- const isMasterAdmin = currentAdmin?.role === 'master_admin';
- const visibleColumns = isMasterAdmin ? columns : columns.filter(c => c.field !== 'total_revenue');
+  const [actionModal, setActionModal] = useState({ open: false, type: '', vendorId: null, oldStatus: '', newStatus: '' });
+  const [rejectionReason, setRejectionReason] = useState('');
+  
+  const currentAdmin = authService.getCurrentAdmin();
+  const isMasterAdmin = currentAdmin?.role === 'master_admin';
+
+  const handleAction = async () => {
+    if (!actionModal.vendorId) return;
+    try {
+      await vendorService.updateVendorStatus(
+        actionModal.vendorId, 
+        actionModal.newStatus, 
+        currentAdmin.id,
+        rejectionReason
+      );
+      toast.success('Vendor status updated successfully');
+      setActionModal({ open: false, type: '', vendorId: null, oldStatus: '', newStatus: '' });
+      setRejectionReason('');
+      fetchVendors();
+    } catch (error) {
+      console.error('Error updating vendor status:', error);
+      toast.error(error.message || 'Failed to update status');
+    }
+  };
+
+  const columns = [
+    { field: 'company_name', headerName: 'Company Name', renderCell: (r) => r.companies?.short_name || 'N/A' },
+    { field: 'username', headerName: 'User Name' },
+    { field: 'email', headerName: 'Email' },
+    { field: 'status', headerName: 'Status', renderCell: (r) => <StatusBadge status={r.status} module="vendor" /> },
+    { field: 'total_revenue', headerName: 'Total Revenue', renderCell: (r) => `₹${(r.total_revenue || 0).toLocaleString()}` },
+    { field: 'created_at', headerName: 'Created Date', renderCell: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
+    { 
+      field: 'actions', 
+      headerName: 'Actions', 
+      renderCell: (r) => (
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          {r.status === 'pending' ? (
+            <>
+               <Button size="small" variant="contained" color="success" onClick={() => setActionModal({ open: true, type: 'changeStatus', vendorId: r.id, oldStatus: r.status, newStatus: 'approved' })}>Approve</Button>
+               <Button size="small" variant="outlined" color="error" onClick={() => setActionModal({ open: true, type: 'changeStatus', vendorId: r.id, oldStatus: r.status, newStatus: 'rejected' })}>Reject</Button>
+            </>
+          ) : (
+            <Button size="small" variant="text" onClick={() => navigate(`/vendors/${r.id}`)}>View</Button>
+          )}
+        </div>
+      )
+    }
+  ];
+
+  const visibleColumns = isMasterAdmin ? columns : columns.filter(c => c.field !== 'total_revenue');
 
  useEffect(() => {
  fetchVendors();
@@ -93,20 +128,34 @@ const VendorListPage = () => {
  Raw Vendor Count: {vendors.length}
  </div>
 
- {loading ? (
- <Box className="flex justify-center p-8"><CircularProgress /></Box>
- ) : (
- <DataTable onRowClick={(row) => navigate(`/vendors/${row.id}`)} 
- columns={visibleColumns} 
- data={filteredVendors} 
- totalCount={filteredVendors.length}
- page={page}
- rowsPerPage={rowsPerPage}
- onPageChange={setPage}
- onRowsPerPageChange={setRowsPerPage}
- />
- )}
- </Box>
+    {loading ? (
+      <Box className="flex justify-center p-8"><CircularProgress /></Box>
+    ) : (
+      <DataTable onRowClick={(row) => navigate(`/vendors/${row.id}`)} 
+        columns={visibleColumns} 
+        data={filteredVendors} 
+        totalCount={filteredVendors.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={setPage}
+        onRowsPerPageChange={setRowsPerPage}
+      />
+    )}
+
+    <ConfirmDialog 
+      open={actionModal.open && actionModal.type === 'changeStatus'}
+      title="Change Vendor Status"
+      message={`Are you sure you want to change vendor status from ${actionModal.oldStatus} to ${actionModal.newStatus}?`}
+      requiresReason={actionModal.newStatus === 'rejected'}
+      reasonLabel="Reason for rejection"
+      reasonValue={rejectionReason}
+      onReasonChange={setRejectionReason}
+      confirmLabel="Confirm"
+      confirmColor="primary"
+      onCancel={() => { setActionModal({ open: false, type: '', vendorId: null, oldStatus: '', newStatus: '' }); setRejectionReason(''); }}
+      onConfirm={handleAction}
+    />
+  </Box>
  );
 };
 

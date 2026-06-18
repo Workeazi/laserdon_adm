@@ -4,7 +4,7 @@ import { NavigateNext } from '@mui/icons-material';
 
 const PageHeader = ({ title, breadcrumbs, actions }) => {
  return (
- <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b border-borderLight">
+ <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
  <div>
  <Breadcrumbs 
  separator={<NavigateNext fontSize="small" />} 

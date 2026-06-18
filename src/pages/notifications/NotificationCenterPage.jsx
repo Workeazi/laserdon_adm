@@ -100,44 +100,45 @@ const NotificationCenterPage = () => {
  headerName: 'Status', 
  renderCell: (row) => <StatusBadge status={row.status} module="vendor" />
  },
- {
- field: 'actions',
- headerName: 'Actions',
- width: 250,
- renderCell: (row) => (
- <div className="flex space-x-2">
- <Button 
- size="small" 
- variant="outlined" 
- onClick={() => navigate(`/vendors/${row.id}`)}
- >
- View
- </Button>
- <FormControl size="small" sx={{ minWidth: 120 }}>
- <Select
- value={row.status || 'pending'}
- onChange={(e) => {
- if (e.target.value !== row.status) {
- setActionModal({
- open: true,
- type: 'changeStatus',
- vendorId: row.id,
- oldStatus: row.status,
- newStatus: e.target.value
- });
- }
- }}
- sx={{ fontSize: '0.875rem' }}
- >
- <MenuItem value="pending">Pending</MenuItem>
- <MenuItem value="approved">Approved</MenuItem>
- <MenuItem value="rejected">Rejected</MenuItem>
- </Select>
- </FormControl>
- </div>
- )
- }
- ];
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 250,
+      renderCell: (row) => (
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          {row.status === 'pending' ? (
+            <>
+              <Button 
+                size="small" 
+                variant="contained" 
+                color="success" 
+                onClick={() => setActionModal({ open: true, type: 'changeStatus', vendorId: row.id, oldStatus: row.status, newStatus: 'approved' })}
+                disableElevation
+              >
+                Approve
+              </Button>
+              <Button 
+                size="small" 
+                variant="outlined" 
+                color="error" 
+                onClick={() => setActionModal({ open: true, type: 'changeStatus', vendorId: row.id, oldStatus: row.status, newStatus: 'rejected' })}
+              >
+                Reject
+              </Button>
+            </>
+          ) : (
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => navigate(`/vendors/${row.id}`)}
+            >
+              View Profile
+            </Button>
+          )}
+        </div>
+      )
+    }
+  ];
 
  const registeredVendors = vendors.filter(v => v.status === 'pending');
  const approvedVendors = vendors.filter(v => v.status === 'approved');

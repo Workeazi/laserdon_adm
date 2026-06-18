@@ -200,16 +200,69 @@ const VerifyDocsPage = () => {
  </Tabs>
  </Box>
 
- {loading ? (
- <Box className="flex items-center justify-center h-64">
- <CircularProgress />
- </Box>
- ) : getTabVendors().length > 0 ? (
- <DataTable 
- columns={columns} 
- data={getTabVendors()} 
- />
- ) : (
+        {loading ? (
+          <Box className="flex items-center justify-center h-64">
+            <CircularProgress />
+          </Box>
+        ) : getTabVendors().length > 0 ? (
+          currentTab === 'uploaded' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-background">
+              {getTabVendors().map((vendor) => (
+                <div key={vendor.id} className="bg-card rounded-xl border border-borderLight shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col relative transition-all hover:shadow-md">
+                  <div className="p-5 flex-1">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-bold text-textPrimary text-lg leading-tight mb-1">{vendor.companies?.short_name || vendor.username || 'Vendor'}</h3>
+                        <p className="text-textSecondary text-sm">{vendor.email}</p>
+                      </div>
+                      <StatusBadge status={vendor.document_status} module="vendor" />
+                    </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-borderLight/50 mb-4 shadow-inner">
+                      <p className="text-sm font-medium text-textSecondary mb-2">Submitted: {new Date(vendor.updated_at || vendor.created_at).toLocaleDateString()}</p>
+                      <Button 
+                        variant="outlined" 
+                        fullWidth 
+                        size="medium"
+                        className="bg-card shadow-sm hover:bg-black/5 dark:hover:bg-white/5"
+                        onClick={() => handleViewDocs(vendor)}
+                      >
+                        Preview Documents
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-black/5 dark:bg-white/5 border-t border-borderLight sticky bottom-0 flex gap-3">
+                    <Button 
+                      variant="contained" 
+                      color="success" 
+                      fullWidth 
+                      disableElevation
+                      className="font-semibold shadow-sm hover:-translate-y-0.5 transition-transform"
+                      onClick={() => handleAction(vendor, 'verified')}
+                    >
+                      Approve
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      color="error" 
+                      fullWidth
+                      className="font-semibold bg-card hover:bg-error-main/10 hover:-translate-y-0.5 transition-transform"
+                      onClick={() => handleAction(vendor, 'rejected')}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DataTable 
+              columns={columns} 
+              data={getTabVendors()} 
+            />
+          )
+        ) : (
  <Box className="flex items-center justify-center h-64">
  <Typography variant="body1" sx={{ color: '#64748B' }}>
  No documents found

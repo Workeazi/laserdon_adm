@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
  Notifications, 
@@ -34,6 +34,11 @@ const NotificationCenter = () => {
  const [unreadCount, setUnreadCount] = useState(0);
  const [anchorEl, setAnchorEl] = useState(null);
  const open = Boolean(anchorEl);
+
+ // Refs for tracking previously notified records to prevent duplicates
+ const notifiedVendorRef = useRef(new Map());
+ const notifiedDocRef = useRef(new Map());
+ const isInitialLoad = useRef(true);
 
  const getNotificationConfig = (notif) => {
  switch (notif.notif_type) {
@@ -117,183 +122,170 @@ const NotificationCenter = () => {
  }
  };
 
- useEffect(() => {
- const fetchNotifications = async () => {
- const [pendingRes, uploadedRes] = await Promise.all([
- supabase
- .from('vendors')
- .select(`*, companies(id, short_name, company_address, company_gst_number)`)
- .eq('status', 'pending')
- .order('created_at', { ascending: false, nullsFirst: false }),
- supabase
- .from('vendors')
- .select(`*, companies(id, short_name, company_address, company_gst_number)`)
- .eq('document_status', 'uploaded')
- .order('updated_at', { ascending: false, nullsFirst: false })
- ]);
+  const showVendorToast = (vendor) => {
+    const companyName = vendor.companies?.short_name || vendor.username || 'Vendor';
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        } max-w-md w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl rounded-xl pointer-events-auto flex border border-borderLight cursor-pointer transition-transform`}
+        onClick={() => {
+          toast.dismiss(t.id);
+          navigate('/notifications');
+        }}
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <Avatar sx={{ width: 32, height: 32, fontSize: '1rem', bgcolor: '#3B82F6' }}>
+                {(companyName || 'V').charAt(0).toUpperCase()}
+              </Avatar>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                New Vendor Registration
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                {companyName} has submitted a registration request.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ), { duration: 3000, position: 'top-right' });
+  };
 
- let combined = [];
+  const showDocToast = (vendor) => {
+    const companyName = vendor.companies?.short_name || vendor.username || 'Vendor';
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        } max-w-md w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl rounded-xl pointer-events-auto flex border border-borderLight cursor-pointer transition-transform`}
+        onClick={() => {
+          toast.dismiss(t.id);
+          navigate('/verify-docs');
+        }}
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <Avatar sx={{ width: 32, height: 32, fontSize: '1rem', bgcolor: '#3B82F6' }}>
+                {(companyName || 'V').charAt(0).toUpperCase()}
+              </Avatar>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                Document Verification Required
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                {companyName} has uploaded documents for verification.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ), { duration: 3000, position: 'top-right' });
+  };
 
- if (!pendingRes.error && pendingRes.data) {
- pendingRes.data.forEach(v => {
- const companyName = v.companies?.short_name || v.username || 'Vendor';
- combined.push({ ...v, company_name: companyName, notif_type: 'vendor_registration', notif_id: `reg_${v.id}`, timestamp: v.created_at || v.updated_at });
- });
- }
- 
- if (!uploadedRes.error && uploadedRes.data) {
- uploadedRes.data.forEach(v => {
- const companyName = v.companies?.short_name || v.username || 'Vendor';
- combined.push({ ...v, company_name: companyName, notif_type: 'DOCUMENT_VERIFICATION', notif_id: `doc_verif_${v.id}`, timestamp: v.updated_at });
- });
- }
+  useEffect(() => {
+    let intervalId;
 
- combined.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
- combined = combined.slice(0, 50);
- 
- setNotifications(combined);
- setUnreadCount(combined.filter(n => n.notif_type === 'vendor_registration' || n.notif_type === 'DOCUMENT_VERIFICATION').length);
- };
+    const fetchNotifications = async () => {
+      const [pendingRes, uploadedRes] = await Promise.all([
+        supabase
+          .from('vendors')
+          .select(`*, companies(id, short_name, company_address, company_gst_number)`)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false, nullsFirst: false }),
+        supabase
+          .from('vendors')
+          .select(`*, companies(id, short_name, company_address, company_gst_number)`)
+          .eq('document_status', 'uploaded')
+          .order('updated_at', { ascending: false, nullsFirst: false })
+      ]);
 
- fetchNotifications();
+      let combined = [];
 
- const regChannel = supabase
- .channel('vendor-registration-listener')
- .on(
- 'postgres_changes',
- { event: '*', schema: 'public', table: 'vendors' },
- async (payload) => {
- fetchNotifications();
+      if (!pendingRes.error && pendingRes.data) {
+        const currentPendingIds = new Set();
+        pendingRes.data.forEach(v => {
+          currentPendingIds.add(v.id);
+          const isNewStatus = !notifiedVendorRef.current.has(v.id) || notifiedVendorRef.current.get(v.id) !== v.status;
+          
+          if (!isInitialLoad.current && isNewStatus) {
+            console.log('Vendor Popup Check:', v);
+            console.log('Popup Triggered:', v.id);
+            showVendorToast(v);
+          }
+          notifiedVendorRef.current.set(v.id, v.status);
+          
+          const companyName = v.companies?.short_name || v.username || 'Vendor';
+          combined.push({ ...v, company_name: companyName, notif_type: 'vendor_registration', notif_id: `reg_${v.id}`, timestamp: v.created_at || v.updated_at });
+        });
 
- if (payload.eventType === 'INSERT') {
- console.log('Vendor Insert Event:', payload);
- console.log('Vendor Status:', payload.new?.status);
- }
+        // Cleanup vendors that are no longer pending so they trigger again if status goes back to pending
+        for (const id of notifiedVendorRef.current.keys()) {
+          if (!currentPendingIds.has(id)) {
+            notifiedVendorRef.current.delete(id);
+          }
+        }
+      }
+      
+      if (!uploadedRes.error && uploadedRes.data) {
+        const currentDocIds = new Set();
+        uploadedRes.data.forEach(v => {
+          currentDocIds.add(v.id);
+          const isNewDocStatus = !notifiedDocRef.current.has(v.id) || notifiedDocRef.current.get(v.id) !== v.document_status;
+          
+          if (!isInitialLoad.current && isNewDocStatus) {
+            console.log('Document Popup Check:', v);
+            console.log('Popup Triggered:', v.id);
+            showDocToast(v);
+          }
+          notifiedDocRef.current.set(v.id, v.document_status);
 
- const triggeredPending =
- (payload.eventType === 'INSERT' &&
- payload.new?.status === 'pending') ||
- (payload.eventType === 'UPDATE' &&
- payload.old?.status !== undefined &&
- payload.old?.status !== payload.new?.status &&
- payload.new?.status === 'pending');
+          const companyName = v.companies?.short_name || v.username || 'Vendor';
+          combined.push({ ...v, company_name: companyName, notif_type: 'DOCUMENT_VERIFICATION', notif_id: `doc_verif_${v.id}`, timestamp: v.updated_at });
+        });
 
- if (triggeredPending) {
- console.log('Vendor Registration Notification Triggered');
- console.log('Old Status:', payload.old?.status);
- console.log('New Status:', payload.new?.status);
- 
- let companyName = payload.new.username || 'Vendor';
- if (payload.new.company_id) {
- const { data } = await supabase.from('companies').select('short_name').eq('id', payload.new.company_id).single();
- if (data?.short_name) companyName = data.short_name;
- }
+        // Cleanup vendors whose documents are no longer uploaded
+        for (const id of notifiedDocRef.current.keys()) {
+          if (!currentDocIds.has(id)) {
+            notifiedDocRef.current.delete(id);
+          }
+        }
+      }
 
- toast.custom((t) => (
- <div
- className={`${
- t.visible ? 'animate-enter' : 'animate-leave'
- } max-w-md w-full bg-card shadow-lg rounded-xl pointer-events-auto flex border border-borderLight cursor-pointer transition-transform`}
- onClick={() => {
- toast.dismiss(t.id);
- navigate('/notifications');
- }}
- >
- <div className="flex-1 w-0 p-4">
- <div className="flex items-start gap-3">
- <div className="flex-shrink-0 mt-0.5">
- <Avatar sx={{ width: 32, height: 32, fontSize: '1rem', bgcolor: '#3B82F6' }}>
- {(companyName || 'V').charAt(0).toUpperCase()}
- </Avatar>
- </div>
- <div className="flex-1 min-w-0">
- <p className="text-sm font-semibold text-slate-900 leading-snug">
- 📋 New Vendor Registration
- </p>
- <p className="mt-1 text-[13px] font-medium text-slate-700 truncate">
- {companyName} has submitted a registration request.
- </p>
- </div>
- </div>
- </div>
- </div>
- ), { duration: 3000 });
- }
- }
- )
- .subscribe();
+      isInitialLoad.current = false;
 
- const docChannel = supabase
- .channel('document-verification-listener')
- .on(
- 'postgres_changes',
- { event: '*', schema: 'public', table: 'vendors' },
- async (payload) => {
- fetchNotifications();
+      combined.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      combined = combined.slice(0, 50);
+      
+      setNotifications(combined);
+      setUnreadCount(combined.filter(n => n.notif_type === 'vendor_registration' || n.notif_type === 'DOCUMENT_VERIFICATION').length);
+    };
 
- const docStatusChanged = payload.old?.document_status !== undefined && payload.old?.document_status !== payload.new?.document_status;
+    fetchNotifications();
+    intervalId = setInterval(fetchNotifications, 15000); // Polling every 15s
 
- if (payload.eventType === 'UPDATE' && docStatusChanged) {
- const newDocStatus = payload.new?.document_status;
- 
- if (newDocStatus === 'uploaded') {
- console.log('Document Verification Notification Triggered');
- let companyName = payload.new?.username || 'Vendor';
- if (payload.new.company_id) {
- supabase.from('companies').select('short_name').eq('id', payload.new.company_id).single().then(({ data }) => {
- if (data?.short_name) companyName = data.short_name;
- showDocToast(companyName);
- });
- } else {
- showDocToast(companyName);
- }
- 
- function showDocToast(cName) {
- toast.custom((t) => (
- <div
- className={`${
- t.visible ? 'animate-enter' : 'animate-leave'
- } max-w-md w-full bg-card shadow-lg rounded-xl pointer-events-auto flex border border-borderLight cursor-pointer transition-transform`}
- onClick={() => {
- toast.dismiss(t.id);
- navigate('/verify-docs');
- }}
- >
- <div className="flex-1 w-0 p-4">
- <div className="flex items-start gap-3">
- <div className="flex-shrink-0 mt-0.5">
- <Avatar sx={{ width: 32, height: 32, fontSize: '1rem', bgcolor: '#3B82F6' }}>
- {(cName || 'V').charAt(0).toUpperCase()}
- </Avatar>
- </div>
- <div className="flex-1 min-w-0">
- <p className="text-sm font-semibold text-slate-900 leading-snug">
- 📄 Document Verification Required
- </p>
- <p className="mt-1 text-[13px] font-medium text-slate-700 truncate">
- {cName} has uploaded documents for verification.
- </p>
- </div>
- </div>
- </div>
- </div>
- ), { duration: 3000 });
- }
- } else if (newDocStatus === 'verified') {
- toast.success('Documents verified successfully');
- } else if (newDocStatus === 'rejected') {
- toast.error('Documents rejected');
- }
- }
- }
- )
- .subscribe();
+    // Realtime fallbacks to trigger fetch immediately on any change
+    const channel = supabase
+      .channel('notification-center-listener')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'vendors' },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
 
- return () => {
- supabase.removeChannel(regChannel);
- supabase.removeChannel(docChannel);
- };
- }, [navigate]);
+    return () => {
+      clearInterval(intervalId);
+      supabase.removeChannel(channel);
+    };
+  }, [navigate]);
 
  const handleClick = (event) => {
  setAnchorEl(event.currentTarget);
@@ -331,10 +323,13 @@ const NotificationCenter = () => {
  overflow: 'visible',
  filter: 'drop-shadow(0px 10px 25px rgba(0,0,0,0.1))',
  mt: 1.5,
- width: 340,
+ width: 360,
  maxHeight: 480,
- borderRadius: '12px',
+ borderRadius: '16px',
  border: '1px solid var(--border-color)',
+ backdropFilter: 'blur(16px)',
+ backgroundColor: 'transparent',
+ boxShadow: '0 20px 40px -10px rgba(0,0,0,0.15)',
  '&:before': {
  content: '""',
  display: 'block',

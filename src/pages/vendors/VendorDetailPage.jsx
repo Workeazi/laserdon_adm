@@ -184,130 +184,138 @@ const VendorDetailPage = () => {
  </div>
  </Box>
  );
- };
+ };  const renderOverview = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Left Column: Profile, Business, Documents */}
+      <div className="lg:col-span-2 space-y-8">
+        {/* Profile Information */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden">
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-bold text-textPrimary mb-6 tracking-tight">Profile Information</Typography>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Company Name</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.companies?.short_name || 'N/A'}</Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">User Name</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.username}</Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Email Address</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.email}</Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">GST Number</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.companies?.company_gst_number || 'N/A'}</Typography>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
- const renderOverview = () => (
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
- {/* Profile Information */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Profile Information</Typography>
- <div className="space-y-3">
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Company Name</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.companies?.short_name || 'N/A'}</Typography>
- </div>
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">User Name</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.username}</Typography>
- </div>
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Email</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.email}</Typography>
- </div>
- <div className="flex justify-between">
- <Typography variant="body2" className="text-textSecondary">GST Number</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.companies?.company_gst_number || 'N/A'}</Typography>
- </div>
- </div>
- </CardContent>
- </Card>
+        {/* Business Information */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden">
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-bold text-textPrimary mb-6 tracking-tight">Business Information</Typography>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Industry Type</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary capitalize">
+                  {vendor.industries?.map(i => i.name).join(', ') || 'N/A'}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Office Address</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.companies?.company_address || 'N/A'}</Typography>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
- {/* Contact Information */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Contact Information</Typography>
- <div className="space-y-3">
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Phone Number</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.phone}</Typography>
- </div>
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">WhatsApp Number</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.whatsapp_number}</Typography>
- </div>
- <div className="flex justify-between">
- <Typography variant="body2" className="text-textSecondary">Alternative Phone</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.alt_phone || '-'}</Typography>
- </div>
- </div>
- </CardContent>
- </Card>
+        {/* Documents Overview */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <Typography variant="h6" className="font-bold text-textPrimary mb-1 tracking-tight">Documents Verification</Typography>
+              <div className="flex items-center gap-2 mt-2">
+                <Typography variant="body2" className="text-textSecondary font-medium">Current Status:</Typography>
+                <StatusBadge status={vendor.document_status || 'pending'} module="document" />
+              </div>
+            </div>
+            <Button variant="outlined" size="large" onClick={handleDocumentAction} className="bg-card hover:bg-black/5 dark:hover:bg-white/5 shadow-sm font-semibold">
+              View Documents
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
- {/* Business Information */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Business Information</Typography>
- <div className="space-y-3">
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Industry Type</Typography>
- <Typography variant="body2" className="font-medium capitalize text-right ml-4">{vendor.industries?.map(i => i.name).join(', ') || 'N/A'}</Typography>
- </div>
- <div className="flex flex-col">
- <Typography variant="body2" className="text-textSecondary mb-1">Office Address</Typography>
- <Typography variant="body2" className="font-medium">{vendor.companies?.company_address || 'N/A'}</Typography>
- </div>
- </div>
- </CardContent>
- </Card>
+      {/* Right Column: Approval, Contact, Location */}
+      <div className="lg:col-span-1 space-y-8">
+        {/* Approval Information */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden bg-gradient-to-b from-card to-slate-50/50 dark:to-slate-900/50">
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-bold text-textPrimary mb-5 tracking-tight">Account Status</Typography>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-card p-3 rounded-lg border border-borderLight/50">
+                <Typography variant="body2" className="text-textSecondary font-medium">Status</Typography>
+                <StatusBadge status={vendor.status} module="vendor" />
+              </div>
+              <div className="flex justify-between items-center p-2">
+                <Typography variant="body2" className="text-textSecondary font-medium">Approved By</Typography>
+                <Typography variant="body2" className="font-semibold text-textPrimary">{vendor.approved_by || '-'}</Typography>
+              </div>
+              <div className="flex justify-between items-center p-2">
+                <Typography variant="body2" className="text-textSecondary font-medium">Approved At</Typography>
+                <Typography variant="body2" className="font-semibold text-textPrimary">
+                  {vendor.approved_at ? new Date(vendor.approved_at).toLocaleDateString() : '-'}
+                </Typography>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
- {/* Location Information */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Location</Typography>
- <div className="space-y-3">
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Latitude</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.latitude || '-'}</Typography>
- </div>
- <div className="flex justify-between">
- <Typography variant="body2" className="text-textSecondary">Longitude</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.longitude || '-'}</Typography>
- </div>
- </div>
- </CardContent>
- </Card>
+        {/* Contact Information */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden">
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-bold text-textPrimary mb-5 tracking-tight">Contact</Typography>
+            <div className="space-y-4">
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Primary Phone</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.phone}</Typography>
+              </div>
+              <Divider className="my-2 border-borderLight" />
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">WhatsApp</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.whatsapp_number}</Typography>
+              </div>
+              <Divider className="my-2 border-borderLight" />
+              <div>
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Alternative Phone</Typography>
+                <Typography variant="body1" className="font-semibold text-textPrimary">{vendor.alt_phone || '-'}</Typography>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
- {/* Approval Information */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Approval Information</Typography>
- <div className="space-y-3">
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Status</Typography>
- <Typography variant="body2" component="div" className="font-medium capitalize text-right ml-4"><StatusBadge status={vendor.status} module="vendor" /></Typography>
- </div>
- <div className="flex justify-between border-b border-borderLight pb-2">
- <Typography variant="body2" className="text-textSecondary">Approved By</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">{vendor.approved_by || '-'}</Typography>
- </div>
- <div className="flex justify-between">
- <Typography variant="body2" className="text-textSecondary">Approved At</Typography>
- <Typography variant="body2" className="font-medium text-right ml-4">
- {vendor.approved_at ? new Date(vendor.approved_at).toLocaleDateString() : '-'}
- </Typography>
- </div>
- </div>
- </CardContent>
- </Card>
-
- {/* Documents Overview */}
- <Card className="rounded-card shadow-sm border border-borderLight">
- <CardContent className="p-6">
- <Typography variant="h6" className="font-bold mb-4">Documents</Typography>
- <div className="space-y-3">
- <div className="flex justify-between items-center pb-2">
- <Typography variant="body2" className="text-textSecondary">Document Status</Typography>
- <StatusBadge status={vendor.document_status || 'pending'} module="document" />
- </div>
- <Button variant="outlined" size="small" fullWidth onClick={handleDocumentAction}>
- View Documents
- </Button>
- </div>
- </CardContent>
- </Card>
- </div>
- );
+        {/* Location Information */}
+        <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight overflow-hidden">
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-bold text-textPrimary mb-5 tracking-tight">Coordinates</Typography>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-borderLight/50">
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Latitude</Typography>
+                <Typography variant="body2" className="font-semibold text-textPrimary">{vendor.latitude || '-'}</Typography>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-borderLight/50">
+                <Typography variant="body2" className="text-textSecondary mb-1 font-medium">Longitude</Typography>
+                <Typography variant="body2" className="font-semibold text-textPrimary">{vendor.longitude || '-'}</Typography>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 
  return (
  <Box className="pb-8 space-y-6">
@@ -342,32 +350,30 @@ const VendorDetailPage = () => {
  }
  />
 
- {/* Vendor Header Summary Card */}
- <Card className="rounded-card shadow-sm border border-borderLight mb-6">
- <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between">
- <div className="flex items-center">
- <Avatar sx={{ width: 64, height: 64, bgcolor: '#2563EB', fontSize: '24px' }}>
- {(vendor.companies?.short_name || vendor.username || 'V').charAt(0).toUpperCase()}
- </Avatar>
- <div className="ml-6">
- <Typography variant="h5" className="font-bold text-textPrimary">{vendor.companies?.short_name || vendor.username || 'Unknown Vendor'}</Typography>
- <div className="flex items-center space-x-3 mt-1">
- <Typography variant="body2" className="text-slate-500 font-medium">ID: {vendor.id?.substring(0,8).toUpperCase()}</Typography>
- <Typography variant="body2" className="text-slate-400">•</Typography>
- <StatusBadge status={vendor.status} module="vendor" />
- <Typography variant="body2" className="text-slate-400">•</Typography>
- <Typography variant="body2" className="text-textSecondary">Joined {new Date(vendor.created_at).toLocaleDateString()}</Typography>
- </div>
- </div>
- </div>
- {isSuperAdmin && analytics && (
- <div className="mt-4 md:mt-0 text-right">
- <Typography variant="body2" className="text-textSecondary uppercase text-xs font-bold tracking-wider mb-1">Total Revenue Generated</Typography>
- <Typography variant="h4" className="font-bold text-textPrimary">₹{(analytics.kpis.totalRevenue || 0).toLocaleString()}</Typography>
- </div>
- )}
- </CardContent>
- </Card>
+      {/* Vendor Header Summary Card */}
+      <Card className="rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-borderLight mb-6 bg-gradient-to-r from-card to-slate-50/30 dark:to-slate-900/30">
+        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between">
+          <div className="flex items-center">
+            <Avatar sx={{ width: 80, height: 80, bgcolor: '#2563EB', fontSize: '32px', boxShadow: '0 4px 14px 0 rgba(37,99,235,0.39)' }} className="ring-4 ring-white dark:ring-slate-800">
+              {(vendor.companies?.short_name || vendor.username || 'V').charAt(0).toUpperCase()}
+            </Avatar>
+            <div className="ml-6">
+              <Typography variant="h4" className="font-bold text-textPrimary tracking-tight">{vendor.companies?.short_name || vendor.username || 'Unknown Vendor'}</Typography>
+              <div className="flex items-center space-x-4 mt-2">
+                <Typography variant="body2" className="text-slate-500 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">ID: {vendor.id?.substring(0,8).toUpperCase()}</Typography>
+                <StatusBadge status={vendor.status} module="vendor" />
+                <Typography variant="body2" className="text-textSecondary font-medium">Joined {new Date(vendor.created_at).toLocaleDateString()}</Typography>
+              </div>
+            </div>
+          </div>
+          {isSuperAdmin && analytics && (
+            <div className="mt-6 md:mt-0 md:text-right bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-borderLight/50 shadow-sm">
+              <Typography variant="body2" className="text-textSecondary uppercase text-xs font-bold tracking-widest mb-1">Total Revenue Generated</Typography>
+              <Typography variant="h4" className="font-bold text-primary-main tracking-tight">₹{(analytics.kpis.totalRevenue || 0).toLocaleString()}</Typography>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
  {/* Tabs */}
  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

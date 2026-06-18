@@ -117,69 +117,67 @@ const DashboardPage = () => {
  {/* Master Admin Charts */}
  {isMasterAdmin && (
  <>
- <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="master-charts-row-1">
- <div className="lg:col-span-1 h-[400px]">
- <DonutChartWidget title="Vendor Status Distribution" data={chartData.vendorStatusDistribution || []} colors={['#10B981', '#F59E0B', '#EF4444', '#64748B']} />
- </div>
- <div className="lg:col-span-2 h-[400px]">
- <BarChartWidget title="Monthly Vendor Registrations" data={chartData.monthlyVendorRegistrations || []} dataKey={['vendors']} barColors={['#3B82F6']} />
- </div>
- </section>
+  <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="master-charts-row-1">
+    <div className="lg:col-span-1 h-[400px]">
+      <DonutChartWidget title="Vendor Status Distribution" data={chartData.vendorStatusDistribution || []} colors={['#10B981', '#F59E0B', '#EF4444', '#64748B']} />
+    </div>
+    <div className="lg:col-span-2 h-[400px]">
+      <BarChartWidget title="Monthly Vendor Registrations" data={chartData.monthlyVendorRegistrations || []} dataKey={['vendors']} barColors={['#3B82F6']} />
+    </div>
+  </section>
 
- <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="master-charts-row-2">
- <div className="h-[400px]">
- <LineChartWidget title="Vendor Approval Performance" data={chartData.vendorActivityTrend || []} dataKey={['approved', 'rejected', 'pending']} lineColors={['#10B981', '#EF4444', '#F59E0B']} />
- </div>
- <div className="h-[400px]">
- <HorizontalBarChartWidget title="Top Vendors by Revenue" data={chartData.topVendorsByRevenue || []} dataKey="revenue" barColor="#6366F1" />
- </div>
- </section>
+  <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="master-charts-row-2">
+    <div className="h-[400px]">
+      <LineChartWidget title="Vendor Approval Performance" data={chartData.vendorActivityTrend || []} dataKey={['approved', 'rejected', 'pending']} lineColors={['#10B981', '#EF4444', '#F59E0B']} />
+    </div>
+    <div className="h-[400px]">
+      <HorizontalBarChartWidget title="Top Vendors by Revenue" data={chartData.topVendorsByRevenue || []} dataKey="revenue" barColor="#6366F1" />
+    </div>
+  </section>
 
- <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="master-charts-row-3">
- <div className="lg:col-span-2 h-[400px]">
- <ComposedChartWidget title="Vendor Growth vs Revenue Growth" data={chartData.growthComparison || []} barDataKey="vendors" lineDataKey="revenue" />
- </div>
- <div className="lg:col-span-1 h-[400px]">
- <LineChartWidget title="Revenue Trend" data={chartData.revenueTrend || []} dataKey={['revenue']} lineColors={['#8B5CF6']} />
- </div>
- </section>
- 
- <section className="grid grid-cols-1 gap-6" data-purpose="master-queue">
- <div className="min-h-[400px]">
- {console.log('DashboardPage passing to PendingVendorQueue (Master):', chartData.pendingVendorQueue)}
- <PendingVendorQueue vendors={chartData.pendingVendorQueue || []} />
- </div>
- </section>
+  <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="master-charts-row-3">
+    <div className="lg:col-span-2 h-[400px]">
+      <ComposedChartWidget title="Vendor Growth vs Revenue Growth" data={chartData.growthComparison || []} barDataKey="vendors" lineDataKey="revenue" />
+    </div>
+    <div className="lg:col-span-1 h-[400px]">
+      <LineChartWidget title="Revenue Trend" data={chartData.revenueTrend || []} dataKey={['revenue']} lineColors={['#8B5CF6']} />
+    </div>
+  </section>
+
+  <section className="grid grid-cols-1 gap-6 mt-6" data-purpose="master-queue">
+    <div className="min-h-[300px]">
+      <PendingVendorQueue vendors={chartData.pendingVendorQueue || []} />
+    </div>
+  </section>
  </>
  )}
 
  {/* Sub Admin Charts */}
  {!isMasterAdmin && (
  <>
- <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="sub-charts-row-1">
- <div className="h-[400px]">
- <DonutChartWidget title="Vendor Status Distribution" data={chartData.vendorStatusDistribution || []} colors={['#10B981', '#F59E0B', '#EF4444']} />
- </div>
- <div className="h-[400px]">
- <DonutChartWidget title="Document Verification Status" data={chartData.documentVerificationStatus || []} colors={['#10B981', '#F59E0B', '#EF4444']} />
- </div>
- </section>
+  <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-purpose="sub-charts-row-1">
+    <div className="h-[400px]">
+      <DonutChartWidget title="Vendor Status Distribution" data={chartData.vendorStatusDistribution || []} colors={['#10B981', '#F59E0B', '#EF4444']} />
+    </div>
+    <div className="h-[400px]">
+      <DonutChartWidget title="Document Verification Status" data={chartData.documentVerificationStatus || []} colors={['#10B981', '#F59E0B', '#EF4444']} />
+    </div>
+  </section>
 
- <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="sub-charts-row-2">
- <div className="lg:col-span-2 h-[400px]">
- <LineChartWidget title="Vendor Activity Trend" data={chartData.vendorActivityTrend || []} dataKey={['new', 'approved', 'rejected']} lineColors={['#3B82F6', '#10B981', '#EF4444']} />
- </div>
- <div className="lg:col-span-1 h-[400px]">
- <BarChartWidget title="Vendor Registration Trend" data={chartData.monthlyVendorRegistrations || []} dataKey={['vendors']} barColors={['#3B82F6']} />
- </div>
- </section>
+  <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-purpose="sub-charts-row-2">
+    <div className="lg:col-span-2 h-[400px]">
+      <LineChartWidget title="Vendor Activity Trend" data={chartData.vendorActivityTrend || []} dataKey={['new', 'approved', 'rejected']} lineColors={['#3B82F6', '#10B981', '#EF4444']} />
+    </div>
+    <div className="lg:col-span-1 h-[400px]">
+      <BarChartWidget title="Vendor Registration Trend" data={chartData.monthlyVendorRegistrations || []} dataKey={['vendors']} barColors={['#3B82F6']} />
+    </div>
+  </section>
 
- <section className="grid grid-cols-1 gap-6" data-purpose="sub-queue">
- <div className="min-h-[400px]">
- {console.log('DashboardPage passing to PendingVendorQueue:', chartData.pendingVendorQueue)}
- <PendingVendorQueue vendors={chartData.pendingVendorQueue || []} />
- </div>
- </section>
+  <section className="grid grid-cols-1 gap-6 mt-6" data-purpose="sub-queue">
+    <div className="min-h-[300px]">
+      <PendingVendorQueue vendors={chartData.pendingVendorQueue || []} />
+    </div>
+  </section>
  </>
  )}
 

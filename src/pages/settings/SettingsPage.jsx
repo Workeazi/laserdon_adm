@@ -2,47 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box, Typography, List, ListItem, ListItemButton, ListItemText, Divider, useMediaQuery, useTheme } from '@mui/material';
 import PageHeader from '../../components/common/PageHeader';
-import PlatformTab from './components/PlatformTab';
 import ProfileTab from './components/ProfileTab';
 import SecurityTab from './components/SecurityTab';
-import SMTPTab from './components/SMTPTab';
-import WhatsAppTab from './components/WhatsAppTab';
-import SupabaseTab from './components/SupabaseTab';
-import IntegrationsTab from './components/IntegrationsTab';
+import CustomerSupportTab from './components/CustomerSupportTab';
 
 const navGroups = [
- {
- title: 'General',
- items: [
- { id: 'platform', label: 'Platform' }
- ]
- },
- {
- title: 'Account',
- items: [
- { id: 'profile', label: 'Profile' },
- { id: 'security', label: 'Security' }
- ]
- },
- {
- title: 'Communication',
- items: [
- { id: 'smtp', label: 'SMTP' },
- { id: 'whatsapp', label: 'WhatsApp' }
- ]
- },
- {
- title: 'System',
- items: [
- { id: 'supabase', label: 'Supabase' },
- { id: 'integrations', label: 'Integrations' }
- ]
- }
+  {
+    title: 'Account',
+    items: [
+      { id: 'profile', label: 'Profile' },
+      { id: 'security', label: 'Security' }
+    ]
+  },
+  {
+    title: 'Support',
+    items: [
+      { id: 'support', label: 'Customer Support' }
+    ]
+  }
 ];
 
 const SettingsPage = () => {
  const [searchParams, setSearchParams] = useSearchParams();
- const initialTab = searchParams.get('tab') || 'platform';
+ const initialTab = searchParams.get('tab') || 'profile';
  const [activeTab, setActiveTab] = useState(initialTab);
  const theme = useTheme();
  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -61,14 +43,10 @@ const SettingsPage = () => {
 
  const renderContent = () => {
  switch (activeTab) {
- case 'platform': return <PlatformTab />;
  case 'profile': return <ProfileTab />;
  case 'security': return <SecurityTab />;
- case 'smtp': return <SMTPTab />;
- case 'whatsapp': return <WhatsAppTab />;
- case 'supabase': return <SupabaseTab />;
- case 'integrations': return <IntegrationsTab />;
- default: return <PlatformTab />;
+ case 'support': return <CustomerSupportTab />;
+ default: return <ProfileTab />;
  }
  };
 

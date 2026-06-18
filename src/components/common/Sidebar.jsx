@@ -80,16 +80,21 @@ const SidebarContent = ({ collapsed, onClose, onLogout, isMobile }) => {
  return item;
  });
 
- return (
- <Box className="bg-sidebar text-textPrimary flex flex-col h-[100vh] overflow-hidden w-full border-r border-borderLight transition-colors duration-200">
- <Box className="h-[72px] flex items-center px-4 border-b border-borderLight justify-between shrink-0">
- {!collapsed && <Typography variant="h6" className="font-bold tracking-wide text-primary-main">LaserDon</Typography>}
- {onClose && (
- <IconButton onClick={onClose} size="small" className="text-textPrimary">
- <MenuOpen />
- </IconButton>
- )}
- </Box>
+  return (
+    <Box className="bg-white dark:bg-sidebar text-slate-600 dark:text-textSecondary flex flex-col h-[100vh] overflow-hidden w-full border-r border-slate-200 dark:border-borderLight transition-colors duration-200">
+      <Box className="h-[72px] flex items-center px-6 border-b border-slate-200 dark:border-borderLight justify-between shrink-0 bg-white dark:bg-transparent">
+        {!collapsed && (
+          <Box className="flex flex-col">
+            <Typography variant="h6" className="font-bold tracking-wide text-slate-800 dark:text-primary-main leading-tight">LaserDon</Typography>
+            <Typography variant="caption" className="font-medium text-slate-500 dark:text-textSecondary leading-none">Admin Portal</Typography>
+          </Box>
+        )}
+        {onClose && (
+          <IconButton onClick={onClose} size="small" className="text-slate-500 dark:text-textPrimary">
+            <MenuOpen />
+          </IconButton>
+        )}
+      </Box>
 
  <nav className={`flex-1 py-4 ${isMobile ? 'overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:\'none\'] [scrollbar-width:\'none\']' : 'overflow-hidden'}`}>
  <ul className="space-y-1 px-3">
@@ -103,21 +108,21 @@ const SidebarContent = ({ collapsed, onClose, onLogout, isMobile }) => {
  
  return (
  <li key={item.path}>
- <NavLink
- to={item.path}
- onClick={onClose}
- className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
- isActive ? 'bg-primary-main/10 text-primary-main shadow-sm font-medium' : 'text-textSecondary hover:bg-black/5 dark:hover:bg-card/5 hover:text-textPrimary'
- } ${collapsed ? 'justify-center' : ''}`}
- >
- <span className={`flex-shrink-0 ${isActive ? 'text-primary-main' : 'text-textSecondary'}`}>{item.icon}</span>
- {!collapsed && (
- <span className="ml-3 flex-1 flex items-center justify-between whitespace-nowrap">
+            <NavLink
+              to={item.path}
+              onClick={onClose}
+              className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group border-l-[3px] ${
+                isActive ? 'bg-blue-50 dark:bg-white/10 text-blue-600 dark:text-primary-main shadow-sm font-semibold border-blue-600 dark:border-primary-main' : 'text-slate-600 dark:text-textSecondary hover:bg-slate-100 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-primary-main border-transparent'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <span className={`flex-shrink-0 transition-colors ${isActive ? 'text-blue-600 dark:text-primary-main' : 'text-slate-500 dark:text-textSecondary group-hover:text-blue-600 dark:group-hover:text-primary-main'}`}>{item.icon}</span>
+              {!collapsed && (
+                <span className="ml-3 flex-1 flex items-center justify-between whitespace-nowrap">
  {item.text}
  {item.badge && (
- <span className="bg-danger-main text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
- {item.badge}
- </span>
+                  <span className="bg-red-500 dark:bg-danger-main text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                    {item.badge}
+                  </span>
  )}
  </span>
  )}
@@ -129,12 +134,12 @@ const SidebarContent = ({ collapsed, onClose, onLogout, isMobile }) => {
 
  </nav>
 
- <Box className="p-4 border-t border-borderLight shrink-0">
- <button onClick={onLogout} className={`flex items-center text-textSecondary hover:text-danger-main transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}>
- <Logout />
- {!collapsed && <span className="ml-3 font-medium">Logout</span>}
- </button>
- </Box>
+      <Box className="p-4 border-t border-slate-200 dark:border-borderLight shrink-0 bg-white dark:bg-transparent">
+        <button onClick={onLogout} className={`flex items-center px-3 py-2.5 rounded-lg text-slate-600 dark:text-textSecondary hover:bg-red-50 dark:hover:bg-danger-main/10 hover:text-red-600 dark:hover:text-danger-main transition-all duration-200 w-full group ${collapsed ? 'justify-center' : ''}`}>
+          <span className="flex-shrink-0 transition-colors group-hover:text-red-600 dark:group-hover:text-danger-main"><Logout /></span>
+          {!collapsed && <span className="ml-3 font-medium">Logout</span>}
+        </button>
+      </Box>
  </Box>
  );
 };

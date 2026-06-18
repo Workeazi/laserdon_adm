@@ -39,7 +39,7 @@ const Topbar = ({ onMenuClick, sidebarWidth }) => {
  <>
  <Box 
  component="header" 
- className="bg-card border-b border-borderLight transition-colors duration-200"
+ className="bg-card/90 backdrop-blur-md border-b border-borderLight transition-colors duration-200"
  sx={{
  position: 'fixed',
  top: 0,
@@ -77,7 +77,7 @@ const Topbar = ({ onMenuClick, sidebarWidth }) => {
  {/* Profile Button */}
  <div 
  onClick={handleProfileClick}
- className="flex items-center cursor-pointer hover:bg-black/5 dark:hover:bg-card/5 px-2 py-1 rounded-btn transition-colors duration-200"
+ className="flex items-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 px-3 py-1.5 rounded-lg transition-colors duration-200"
  >
  <Avatar 
  sx={{ width: 32, height: 32 }} 
