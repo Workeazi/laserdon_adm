@@ -24,7 +24,11 @@ export const activityLogService = {
     console.log('Activity Error:', error);
 
     if (error) {
-      console.error('Failed to log activity:', error);
+      if (error.code === 'PGRST205') {
+        console.warn('Activity logging skipped: admin_activity_logs table does not exist.');
+      } else {
+        console.error('Failed to log activity:', error);
+      }
     }
 
     return result;

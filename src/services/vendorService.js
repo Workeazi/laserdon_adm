@@ -135,22 +135,71 @@ export const vendorService = {
     const urls = [];
 
     try {
-      const { data: files, error } = await supabase.storage.from(bucket).list(vendorId.toString());
-      
-      if (files && files.length > 0) {
-        for (const file of files) {
-          if (file.name === '.emptyFolder') continue;
+      // Get the company_id for this vendor to check multiple possible folder/file structures
+      const { data: vendorData } = await supabase
+        .from('vendors')
+        .select('company_id')
+        .eq('id', vendorId)
+        .single();
 
-          const filePath = `${vendorId}/${file.name}`;
-          const { data: signedUrlData } = await supabase.storage.from(bucket).createSignedUrl(filePath, 3600);
-          
-          if (signedUrlData) {
-            urls.push(signedUrlData.signedUrl);
+      // Check subfolders
+      const foldersToTry = [vendorId.toString()];
+      if (vendorData && vendorData.company_id) {
+        foldersToTry.push(vendorData.company_id.toString());
+      }
+      
+      let debugCheckedPaths = [];
+
+      for (const folder of foldersToTry) {
+        debugCheckedPaths.push(folder);
+        const { data: files, error } = await supabase.storage.from(bucket).list(folder);
+        
+        if (error) {
+          console.error(`Storage list error for folder ${folder}:`, error);
+        }
+        
+        if (files && files.length > 0) {
+          for (const file of files) {
+            if (file.name === '.emptyFolder') continue;
+            const filePath = `${folder}/${file.name}`;
+            const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            if (publicUrlData && publicUrlData.publicUrl) {
+              urls.push(publicUrlData.publicUrl);
+            }
           }
         }
       }
+
+      // If nothing found in subfolders, try the root directory (maybe files are prefixed with ID)
+      if (urls.length === 0) {
+        const { data: rootFiles } = await supabase.storage.from(bucket).list('');
+        if (rootFiles && rootFiles.length > 0) {
+          for (const file of rootFiles) {
+            if (file.name === '.emptyFolder' || !file.name) continue;
+            
+            // If the file name includes the vendor ID or company ID
+            if (file.name.includes(vendorId) || (vendorData && vendorData.company_id && file.name.includes(vendorData.company_id))) {
+              const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(file.name);
+              if (publicUrlData && publicUrlData.publicUrl) {
+                urls.push(publicUrlData.publicUrl);
+              }
+            }
+          }
+        }
+      }
+      
+      if (urls.length === 0) {
+        throw new Error(`Checked folders: ${debugCheckedPaths.join(', ')} but found 0 files. Make sure the folder name in Supabase EXACTLY matches one of these.`);
+      }
+      
+      // Still nothing? Try grabbing ANY files in the bucket if there are very few (as a fallback debug)
+      if (urls.length === 0) {
+        console.warn(`No documents explicitly matched ${vendorId} or company ${vendorData?.company_id}.`);
+      }
+
     } catch (err) {
-      console.warn(`Could not fetch from bucket ${bucket} for vendor ${vendorId}`, err);
+      console.error(`Could not fetch from bucket ${bucket} for vendor ${vendorId}`, err);
+      throw err; // Re-throw so VerifyDocsPage can catch it and display it in the toast!
     }
     
     return urls;
