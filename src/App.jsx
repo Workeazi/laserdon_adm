@@ -22,6 +22,7 @@ import VendorListPage from './pages/vendors/VendorListPage';
 import VendorDetailPage from './pages/vendors/VendorDetailPage';
 import UserListPage from './pages/users/UserListPage';
 import UserDetailPage from './pages/users/UserDetailPage';
+import PaymentsPage from './pages/payments/PaymentsPage';
 import PaymentDetailPage from './pages/payments/PaymentDetailPage';
 import AdminDetailPage from './pages/admins/AdminDetailPage';
 
@@ -90,7 +91,7 @@ function App() {
  <Route path="users" element={<UserListPage />} />
  <Route path="users/:id" element={<UserDetailPage />} />
  
- <Route path="payments" element={<RoleRoute allowedRoles={['master_admin']}><PlaceholderPage title="Payments" /></RoleRoute>} />
+ <Route path="payments" element={<RoleRoute allowedRoles={['master_admin']}><PaymentsPage /></RoleRoute>} />
  <Route path="payments/:id" element={<RoleRoute allowedRoles={['master_admin']}><PaymentDetailPage /></RoleRoute>} />
  
  <Route path="reports" element={<RoleRoute allowedRoles={['master_admin']}><ReportsPage /></RoleRoute>} />
